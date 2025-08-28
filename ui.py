@@ -3,6 +3,14 @@ from tkinter import messagebox
 from functools import partial
 import commands
 
+def handle_update(id, title, app):
+    if not title:
+        messagebox.showerror(title="Edit Task", message="Can not update with empty task!", parent=app)
+    else:
+        commands.update_task(id, {"title": title})
+        show_all_tasks_frame(app)    
+    
+
 def handle_delete(id, app):
     commands.delete_task(id)
     show_all_tasks_frame(app)
@@ -13,6 +21,33 @@ def submit_task(title, app):
     else:
        commands.save_task({"title": title})
        show_all_tasks_frame(app)   
+
+def show_edit_task_frame(task, app):
+    frame = tk.Frame(master=app)
+    frame.grid(row=0, column=0, sticky="nsew", padx=10, pady=10)
+
+    
+    label = tk.Label(master=frame, text="Edit task:")
+    label.grid(row=0, column=0, columnspan=2)
+
+    # 1. Add an entry widget and show the task title
+    entry = tk.Entry(master=frame)
+    entry.insert(0, task["title"])   
+    entry.grid(row=1, column=0, columnspan=2, pady=5)
+
+    # 2. Add a button with text "Update" for saving the changes
+    update_btn = tk.Button(master=frame, text="Update", command=lambda: handle_update(task["_id"], entry.get(), app))
+    update_btn.grid(row=2, column=0, padx=5, pady=5)
+
+    # 3. Add a button with text "Back / Cancel" to remove the frame
+    cancel_btn = tk.Button(
+        master=frame,
+        text="Cancel",
+        command=lambda: show_all_tasks_frame(app)
+    )
+    cancel_btn.grid(row=2, column=1, padx=5, pady=5)
+
+    frame.tkraise()
 
 def show_add_task_frame(app):
     frame = tk.Frame(master=app)
@@ -36,7 +71,7 @@ def show_all_tasks_frame(app):
         checkbtn = tk.Checkbutton(master=frame, text=task["title"])
         checkbtn.grid(row=tasks.index(task), column=0)
 
-        edit_btn = tk.Button(master=frame, text="Edit")
+        edit_btn = tk.Button(master=frame, text="Edit", command=partial(show_edit_task_frame, task, app))
         edit_btn.grid(row=tasks.index(task), column=1)
 
         delete_btn = tk.Button(master=frame, text="Delete", command=partial(handle_delete, task["_id"], app))
